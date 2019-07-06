@@ -229,6 +229,300 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/07/【JDBC】通过JDBC的方法连接Oracle数据库并进行简单操作（含demo）/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Szymou">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Szymou_Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/07/07/【JDBC】通过JDBC的方法连接Oracle数据库并进行简单操作（含demo）/" itemprop="url">【JDBC】通过JDBC的方法连接Oracle数据库并进行简单操作（含demo）</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-07T02:13:47+08:00">
+                2019-07-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><em>！！！！！不得不吐槽一句！使用校园网，大概率出现无法保存文章的情况！难道是Markdown编辑器下在编辑的文章不断自动保存，造成校园网过滤其IP？改天研究研究！</em> </p>
+<p>什么是JDBC？<br>        JDBC又称Java DataBase Connectivity，顾名思义就是Java数据库连接。至于是什么，我们来将其使用一次就大概明白了。</p>
+<p>下面以Oracle为例：</p>
+<p><strong>开始：</strong><br>过程：<br>①载入JDBC驱动程序<br>②加载数据库驱动程序<br>③创建连接对象<br>④创建Statement对象<br>⑤Statement执行SQL语句<br>⑥逆向关闭连接</p>
+<p><strong>0.我们先在Eclipse建一个Java项目吧！</strong><br>有些童鞋纠结创建什么项目，其实目前都可以，能编译执行Java文件即可。<br><img src="https://img-blog.csdnimg.cn/20190704184146985.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzU0ODc0OA==,size_16,color_FFFFFF,t_70" alt="熟知宇某截图"></p>
+<p><strong>1.载入JDBC驱动程序</strong><br>我这里使用的是Oracle数据库，所以在main函数中加载语句如下：<br> <code>Class.forName(&quot;oracle.jdbc.driver.OracleDriver&quot;);</code><br> 如果是MYSQL数据库，可以这样： <code>Class.forName(&quot;com.mysql.jdbc.Driver&quot;);</code></p>
+<p><strong>2.加载数据库驱动程序</strong><br>这里与第一步骤的加载不知道是不是同一个东西，等下操作到<strong>最后步骤</strong>的时候我们删掉其中一个试一下。<br>这里下载其中一个即可。<br>ojdbc6.jar<a href="http://t.cn/Ai0shmrU" target="_blank" rel="noopener">驱动下载</a><br>ojdbc14.jar<a href="http://t.cn/Ai0sJj5U" target="_blank" rel="noopener">驱动下载</a><br>下载完，我们在项目中加载它：<br>“右击项目名称”→“构建路径”→“配置构建路径”→选项“库”→“添加外部JAR”→添加刚刚下载的 ojdbc6.jar包。如图：<br><img src="https://img-blog.csdnimg.cn/201907041948572.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzU0ODc0OA==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/20190704195025783.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzU0ODc0OA==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p><strong>3.创建连接对象</strong><br>先使用DriverManager类声明一个Connection对象并连接：<br><code>Connection con = DriverManager.getConnection(jdbcUrl, user, password);</code><br>这里说一下什么是DriverManager：<strong>DriverManager</strong>专门用于检查在Java程序与JDBC驱动程序之间是否可以建立连接。</p>
+<p>其中getConnection(<strong>jdbcUrl, user, password</strong>);的三个参数分别是URL地址、用户名、密码。<br>而URL地址较为特殊：协议名 + IP地址(域名) + 端口 + 数据库名称；<br>如Oracle的写法：<code>jdbcUrl = &quot;jdbc:oracle:thin:@localhost:1521:Szymou&quot;;</code></p>
+<p><strong>4.创建Statement对象</strong><br>Statement对象通俗说就是可以执行sql语句。<br>如：<br><code>Statement createStatement = con.createStatement();</code><br><code>String sql = &quot;select * from CLASSINFO&quot;;</code><br><code>ResultSet executeQuery = createStatement.executeQuery(sql);</code></p>
+<p><strong>5.Statement执行SQL语句</strong><br> <code>ResultSet executeQuery = createStatement.executeQuery(sql);</code><br>这里executeQuery 在sql语句执行过后赋有了相应操作的结果。<br>比如sql语句为select查询数据库语句，可以通过executeQuery.getString()等方法来提取结果。</p>
+<p><strong>6.逆向关闭连接</strong>（这里可能误，如有请留言告知！）<br>关闭executeQuery <code>executeQuery.close();</code><br>关闭Statement     <code>createStatement.close();</code><br>关闭数据库       <code>con.close();</code></p>
+<p>代码如下：<br><strong>Jdbc.java</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">package szymou;</span><br><span class="line"></span><br><span class="line">import java.sql.Connection;</span><br><span class="line">import java.sql.DriverManager;</span><br><span class="line">import java.sql.ResultSet;</span><br><span class="line">import java.sql.Statement;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @author szymou</span><br><span class="line"> *</span><br><span class="line"> */</span><br><span class="line">public class Jdbc &#123;</span><br><span class="line"></span><br><span class="line">	public static void main(String[] args) &#123;</span><br><span class="line">		// TODO 自动生成的方法存根</span><br><span class="line">		try &#123;</span><br><span class="line">			Class.forName(&quot;oracle.jdbc.driver.OracleDriver&quot;);//①载入JDBC驱动程序</span><br><span class="line">			System.out.println(&quot;数据库驱动加载成功&quot;);</span><br><span class="line">			//数据库用户名为nue，密码为1；你们的自己改</span><br><span class="line">			Connection con = DriverManager.getConnection(&quot;jdbc:oracle:thin:@localhost:1521:Szymou&quot;, &quot;nue&quot;, &quot;1&quot;);//③创建连接对象</span><br><span class="line">			System.out.println(&quot;数据库连接成功&quot;);</span><br><span class="line">			Statement createStatement = con.createStatement();//④创建Statement对象</span><br><span class="line">			String sql = &quot;select * from CLASSINFO&quot;;</span><br><span class="line">			ResultSet executeQuery = createStatement.executeQuery(sql);//⑤Statement执行SQL语句</span><br><span class="line"></span><br><span class="line">			while(executeQuery.next()) &#123;</span><br><span class="line">				String s1 = executeQuery.getString(1);</span><br><span class="line">				String s2 = executeQuery.getString(2);</span><br><span class="line">				String s3 = executeQuery.getString(3);</span><br><span class="line">				String s4 = executeQuery.getString(4);</span><br><span class="line">				String s5 = executeQuery.getString(5);</span><br><span class="line">				String s6 = executeQuery.getString(6);</span><br><span class="line">				System.out.print(s1 + &quot; &quot;);</span><br><span class="line">				System.out.print(s2 + &quot; &quot;);</span><br><span class="line">				System.out.print(s3 + &quot; &quot;);</span><br><span class="line">				System.out.print(s4 + &quot; &quot;);</span><br><span class="line">				System.out.print(s5 + &quot; &quot;);</span><br><span class="line">				System.out.println(s6 + &quot; &quot;);</span><br><span class="line">//				String classid = executeQuery.getString(&quot;classname&quot;);</span><br><span class="line">//				System.out.println(classid);</span><br><span class="line"></span><br><span class="line">			&#125;</span><br><span class="line">				//⑥逆向关闭连接</span><br><span class="line">				executeQuery.close();</span><br><span class="line">				createStatement.close();</span><br><span class="line">				con.close();</span><br><span class="line">			</span><br><span class="line">		&#125; catch (Exception e) &#123;</span><br><span class="line">			// TODO 自动生成的 catch 块</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>本章节demo：<a href="http://t.cn/Ai0scvau" target="_blank" rel="noopener">JDBC_study.zip</a></p>
+<blockquote>
+<p>下面是测试时间：</p>
+</blockquote>
+<p>有些童鞋还记住我们还有个测试没做对吧？<br>第一步骤的<code>Class.forName(&quot;oracle.jdbc.driver.OracleDriver&quot;);</code>和第二步骤的项目加载入ojdbcX.jar有何关联？同一个东西吗？一头雾水。<br><strong>第一次尝试：</strong><br>在项目加载ojdbc6.jar！对，<strong>ojdbc6.jar</strong> 。<br>在代码注释掉<code>Class.forName(&quot;oracle.jdbc.driver.OracleDriver&quot;);</code><br>运行一遍…发现还能执行。<br><img src="https://img-blog.csdnimg.cn/20190704202643706.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzU0ODc0OA==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><strong>第二次尝试：</strong><br>在项目中卸掉<strong>ojdbc6.jar</strong><br>恢复<code>Class.forName(&quot;oracle.jdbc.driver.OracleDriver&quot;);</code><br>运行…提示错误<br><img src="https://img-blog.csdnimg.cn/20190704203436749.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzU0ODc0OA==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p><strong>第三次尝试</strong><br>在项目中加载<strong>ojdbc14.jar</strong><br>恢复<code>Class.forName(&quot;oracle.jdbc.driver.OracleDriver&quot;);</code><br>运行成功<br><img src="https://img-blog.csdnimg.cn/20190704204110801.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzU0ODc0OA==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p><strong>第四次尝试：</strong><br>在项目中加载<strong>ojdbc14.jar</strong><br>在代码注释掉<code>Class.forName(&quot;oracle.jdbc.driver.OracleDriver&quot;);</code><br>运行…提示错误<br><img src="https://img-blog.csdnimg.cn/20190704203938895.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzU0ODc0OA==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p><strong>第五次尝试</strong><br>在项目中卸掉<strong>ojdbc6.jar</strong><br>在代码注释掉<code>Class.forName(&quot;oracle.jdbc.driver.OracleDriver&quot;);</code><br>运行…却发现和<strong>第四次尝试</strong>一样的错误提示<br><img src="https://img-blog.csdnimg.cn/20190704204414672.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzU0ODc0OA==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p>从<strong>第四次</strong>和<strong>第五次</strong>的尝试可以猜测出：<code>Class.forName(&quot;oracle.jdbc.driver.OracleDriver&quot;);</code>是用于加载ojdbcX.jar文件的。</p>
+<p>那为什么<strong>第一次</strong>和<strong>第四次</strong>的都是加载ojdbcX.jar、注释Class.forName(“”);两者情况一致，怎么前者运行成功，而后者失败呢？这可以猜测出：<br>可能是ojdbc6.jar和ojdbc14.jar版本不一样，前者可以自动载入程序中，而后者出于安全性问题，去除了自动载入的方法。</p>
+<ul>
+<li><input disabled type="checkbox"> DAO设计模式的使用</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/07/【JDBC】通过JDBC的方法连接Oracle数据库并进行简单操作（含demo）+Class.forName(__)与ojdbcX.jar的区别和联系/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Szymou">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Szymou_Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/07/07/【JDBC】通过JDBC的方法连接Oracle数据库并进行简单操作（含demo）+Class.forName(__)与ojdbcX.jar的区别和联系/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-07T02:12:27+08:00">
+                2019-07-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><em>！！！！！不得不吐槽一句！使用校园网，大概率出现无法保存文章的情况！难道是Markdown编辑器下在编辑的文章不断自动保存，造成校园网过滤其IP？改天研究研究！</em> </p>
+<p>什么是JDBC？<br>        JDBC又称Java DataBase Connectivity，顾名思义就是Java数据库连接。至于是什么，我们来将其使用一次就大概明白了。</p>
+<p>下面以Oracle为例：</p>
+<p><strong>开始：</strong><br>过程：<br>①载入JDBC驱动程序<br>②加载数据库驱动程序<br>③创建连接对象<br>④创建Statement对象<br>⑤Statement执行SQL语句<br>⑥逆向关闭连接</p>
+<p><strong>0.我们先在Eclipse建一个Java项目吧！</strong><br>有些童鞋纠结创建什么项目，其实目前都可以，能编译执行Java文件即可。<br><img src="https://img-blog.csdnimg.cn/20190704184146985.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzU0ODc0OA==,size_16,color_FFFFFF,t_70" alt="熟知宇某截图"></p>
+<p><strong>1.载入JDBC驱动程序</strong><br>我这里使用的是Oracle数据库，所以在main函数中加载语句如下：<br> <code>Class.forName(&quot;oracle.jdbc.driver.OracleDriver&quot;);</code><br> 如果是MYSQL数据库，可以这样： <code>Class.forName(&quot;com.mysql.jdbc.Driver&quot;);</code></p>
+<p><strong>2.加载数据库驱动程序</strong><br>这里与第一步骤的加载不知道是不是同一个东西，等下操作到<strong>最后步骤</strong>的时候我们删掉其中一个试一下。<br>这里下载其中一个即可。<br>ojdbc6.jar<a href="http://t.cn/Ai0shmrU" target="_blank" rel="noopener">驱动下载</a><br>ojdbc14.jar<a href="http://t.cn/Ai0sJj5U" target="_blank" rel="noopener">驱动下载</a><br>下载完，我们在项目中加载它：<br>“右击项目名称”→“构建路径”→“配置构建路径”→选项“库”→“添加外部JAR”→添加刚刚下载的 ojdbc6.jar包。如图：<br><img src="https://img-blog.csdnimg.cn/201907041948572.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzU0ODc0OA==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/20190704195025783.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzU0ODc0OA==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p><strong>3.创建连接对象</strong><br>先使用DriverManager类声明一个Connection对象并连接：<br><code>Connection con = DriverManager.getConnection(jdbcUrl, user, password);</code><br>这里说一下什么是DriverManager：<strong>DriverManager</strong>专门用于检查在Java程序与JDBC驱动程序之间是否可以建立连接。</p>
+<p>其中getConnection(<strong>jdbcUrl, user, password</strong>);的三个参数分别是URL地址、用户名、密码。<br>而URL地址较为特殊：协议名 + IP地址(域名) + 端口 + 数据库名称；<br>如Oracle的写法：<code>jdbcUrl = &quot;jdbc:oracle:thin:@localhost:1521:Szymou&quot;;</code></p>
+<p><strong>4.创建Statement对象</strong><br>Statement对象通俗说就是可以执行sql语句。<br>如：<br><code>Statement createStatement = con.createStatement();</code><br><code>String sql = &quot;select * from CLASSINFO&quot;;</code><br><code>ResultSet executeQuery = createStatement.executeQuery(sql);</code></p>
+<p><strong>5.Statement执行SQL语句</strong><br> <code>ResultSet executeQuery = createStatement.executeQuery(sql);</code><br>这里executeQuery 在sql语句执行过后赋有了相应操作的结果。<br>比如sql语句为select查询数据库语句，可以通过executeQuery.getString()等方法来提取结果。</p>
+<p><strong>6.逆向关闭连接</strong>（这里可能误，如有请留言告知！）<br>关闭executeQuery <code>executeQuery.close();</code><br>关闭Statement     <code>createStatement.close();</code><br>关闭数据库       <code>con.close();</code></p>
+<p>代码如下：<br><strong>Jdbc.java</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">package szymou;</span><br><span class="line"></span><br><span class="line">import java.sql.Connection;</span><br><span class="line">import java.sql.DriverManager;</span><br><span class="line">import java.sql.ResultSet;</span><br><span class="line">import java.sql.Statement;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @author szymou</span><br><span class="line"> *</span><br><span class="line"> */</span><br><span class="line">public class Jdbc &#123;</span><br><span class="line"></span><br><span class="line">	public static void main(String[] args) &#123;</span><br><span class="line">		// TODO 自动生成的方法存根</span><br><span class="line">		try &#123;</span><br><span class="line">			Class.forName(&quot;oracle.jdbc.driver.OracleDriver&quot;);//①载入JDBC驱动程序</span><br><span class="line">			System.out.println(&quot;数据库驱动加载成功&quot;);</span><br><span class="line">			//数据库用户名为nue，密码为1；你们的自己改</span><br><span class="line">			Connection con = DriverManager.getConnection(&quot;jdbc:oracle:thin:@localhost:1521:Szymou&quot;, &quot;nue&quot;, &quot;1&quot;);//③创建连接对象</span><br><span class="line">			System.out.println(&quot;数据库连接成功&quot;);</span><br><span class="line">			Statement createStatement = con.createStatement();//④创建Statement对象</span><br><span class="line">			String sql = &quot;select * from CLASSINFO&quot;;</span><br><span class="line">			ResultSet executeQuery = createStatement.executeQuery(sql);//⑤Statement执行SQL语句</span><br><span class="line"></span><br><span class="line">			while(executeQuery.next()) &#123;</span><br><span class="line">				String s1 = executeQuery.getString(1);</span><br><span class="line">				String s2 = executeQuery.getString(2);</span><br><span class="line">				String s3 = executeQuery.getString(3);</span><br><span class="line">				String s4 = executeQuery.getString(4);</span><br><span class="line">				String s5 = executeQuery.getString(5);</span><br><span class="line">				String s6 = executeQuery.getString(6);</span><br><span class="line">				System.out.print(s1 + &quot; &quot;);</span><br><span class="line">				System.out.print(s2 + &quot; &quot;);</span><br><span class="line">				System.out.print(s3 + &quot; &quot;);</span><br><span class="line">				System.out.print(s4 + &quot; &quot;);</span><br><span class="line">				System.out.print(s5 + &quot; &quot;);</span><br><span class="line">				System.out.println(s6 + &quot; &quot;);</span><br><span class="line">//				String classid = executeQuery.getString(&quot;classname&quot;);</span><br><span class="line">//				System.out.println(classid);</span><br><span class="line"></span><br><span class="line">			&#125;</span><br><span class="line">				//⑥逆向关闭连接</span><br><span class="line">				executeQuery.close();</span><br><span class="line">				createStatement.close();</span><br><span class="line">				con.close();</span><br><span class="line">			</span><br><span class="line">		&#125; catch (Exception e) &#123;</span><br><span class="line">			// TODO 自动生成的 catch 块</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>本章节demo：<a href="http://t.cn/Ai0scvau" target="_blank" rel="noopener">JDBC_study.zip</a></p>
+<blockquote>
+<p>下面是测试时间：</p>
+</blockquote>
+<p>有些童鞋还记住我们还有个测试没做对吧？<br>第一步骤的<code>Class.forName(&quot;oracle.jdbc.driver.OracleDriver&quot;);</code>和第二步骤的项目加载入ojdbcX.jar有何关联？同一个东西吗？一头雾水。<br><strong>第一次尝试：</strong><br>在项目加载ojdbc6.jar！对，<strong>ojdbc6.jar</strong> 。<br>在代码注释掉<code>Class.forName(&quot;oracle.jdbc.driver.OracleDriver&quot;);</code><br>运行一遍…发现还能执行。<br><img src="https://img-blog.csdnimg.cn/20190704202643706.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzU0ODc0OA==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><strong>第二次尝试：</strong><br>在项目中卸掉<strong>ojdbc6.jar</strong><br>恢复<code>Class.forName(&quot;oracle.jdbc.driver.OracleDriver&quot;);</code><br>运行…提示错误<br><img src="https://img-blog.csdnimg.cn/20190704203436749.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzU0ODc0OA==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p><strong>第三次尝试</strong><br>在项目中加载<strong>ojdbc14.jar</strong><br>恢复<code>Class.forName(&quot;oracle.jdbc.driver.OracleDriver&quot;);</code><br>运行成功<br><img src="https://img-blog.csdnimg.cn/20190704204110801.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzU0ODc0OA==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p><strong>第四次尝试：</strong><br>在项目中加载<strong>ojdbc14.jar</strong><br>在代码注释掉<code>Class.forName(&quot;oracle.jdbc.driver.OracleDriver&quot;);</code><br>运行…提示错误<br><img src="https://img-blog.csdnimg.cn/20190704203938895.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzU0ODc0OA==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p><strong>第五次尝试</strong><br>在项目中卸掉<strong>ojdbc6.jar</strong><br>在代码注释掉<code>Class.forName(&quot;oracle.jdbc.driver.OracleDriver&quot;);</code><br>运行…却发现和<strong>第四次尝试</strong>一样的错误提示<br><img src="https://img-blog.csdnimg.cn/20190704204414672.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzU0ODc0OA==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p>从<strong>第四次</strong>和<strong>第五次</strong>的尝试可以猜测出：<code>Class.forName(&quot;oracle.jdbc.driver.OracleDriver&quot;);</code>是用于加载ojdbcX.jar文件的。</p>
+<p>那为什么<strong>第一次</strong>和<strong>第四次</strong>的都是加载ojdbcX.jar、注释Class.forName(“”);两者情况一致，怎么前者运行成功，而后者失败呢？这可以猜测出：<br>可能是ojdbc6.jar和ojdbc14.jar版本不一样，前者可以自动载入程序中，而后者出于安全性问题，去除了自动载入的方法。</p>
+<ul>
+<li><input disabled type="checkbox"> DAO设计模式的使用</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/07/Szymou/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -514,7 +808,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-count">4</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
